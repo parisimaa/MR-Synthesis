@@ -1,4 +1,4 @@
-# MR-Synthesis
+# MR Contrast Image Synthesis using Deep Learning
 🚧 Under Construction 🚧 Stay tuned! Updates coming soon...
 
 
