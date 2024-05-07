@@ -1,3 +1,9 @@
+"""
+@author: Parisima
+Use the weights to get predictions
+predictions will be saved in .mat format
+"""
+
 import sys
 import numpy as np
 import nibabel as nib
@@ -20,19 +26,18 @@ model_ = modelObj(cfg)
 
 # Load the trained weights
 weights = {
-    'Baseline': 
-    '/gpfs/scratch/pa2297/Training/t1-t2-flair/ZmeanOff/brats_t1_t2_flair_ReLUloss1/rand_deform/finetune_Hybride _baseline/t1_t2_flair_ReLUloss1_tr1_Hybride/tr_comb_Exp1_LR_ft_0.01/weights_20Final.hdf5',
-    'Full_Decoder': '/gpfs/scratch/pa2297/Training/t1-t2-flair/ZmeanOff/brats_t1_t2_flair_ReLUloss1/rand_deform/finetune_Hybride _CL_full_dec_warm/t1_t2_flair_ReLUloss1_tr1_Hybride/tr_comb_Exp1_LR_ft_0.01/weights_20Final.hdf5',
-    'Partial_Decoder': '/gpfs/scratch/pa2297/Training/t1-t2-flair/ZmeanOff/brats_t1_t2_flair_ReLUloss1/rand_deform/finetune_Hybride _CL_partial_dec_warm/t1_t2_flair_ReLUloss1_tr1_Hybride/tr_comb_Exp1_LR_ft_0.01/weights_20Final.hdf5'
+    'Baseline': '/PathToWeight/weights_20Final.hdf5',
+    'Full_Decoder': '/PathToWeight/weights_20Final.hdf5',
+    'Partial_Decoder': '/PathToWeight/weights_20Final.hdf5'
 }
 
 models = {
-    'Baseline': model_.synth_unet(act_name='relu'),
+    'Baseline': model_.synth_unet(act_name='relu'), # you can change it to tanh 
     'Full_Decoder': model_.synth_unet(act_name='relu'),
     'Partial_Decoder': model_.synth_unet(act_name='relu')
 }
 
-sys.path.append('/gpfs/scratch/pa2297/multi-contrast-contrastive-learning/')
+sys.path.append('/YourPath/multi-contrast-contrastive-learning/')
 
 from utils.utils import myCrop3D
 from utils.utils import contrastStretch
@@ -50,7 +55,7 @@ def normalize_img(img):
     return img
 
 def load_subject(datadir, subName):
-    data_suffix = ['_t1ce.nii.gz', '_t2.nii.gz', '_t1.nii.gz', '_flair.nii.gz']
+    data_suffix = ['_t1ce.nii.gz', '_t2.nii.gz', '_t1.nii.gz', '_flair.nii.gz'] 
     sub_img = []
     mask = None
     for suffix in data_suffix:
@@ -64,7 +69,7 @@ def load_subject(datadir, subName):
             mask[img_data > 0] = 1
         
         img_data = contrastStretch(img_data, mask, 0.01, 99.9)
-        img_data, mean_, std_ = normalize_img_zmean(img_data, mask)
+        img_data, mean_, std_ = normalize_img_zmean(img_data, mask) # depends on the normalization used for training
         # img_data = normalize_img(img_data)
         sub_img.append(img_data)
     
@@ -96,11 +101,11 @@ def generate_Y(img, target_contrast_idx):
 for key, model in models.items():
     model.load_weights(weights[key])
 
-datadir = "/gpfs/scratch/pa2297/Dataset/BraTS2021_Test/"
+datadir = "/YourPath/Dataset/BraTS2021_Test/"
 subjects = [f for f in os.listdir(datadir) if os.path.isdir(os.path.join(datadir, f)) and f.startswith("BraTS2021_")]
 
 # Path to save predictions
-output_dir = "/gpfs/scratch/pa2297/CCL-Predictions/relu-zmeanoff/"
+output_dir = "SaveDir"               # Save Directory
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
